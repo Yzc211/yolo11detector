@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOV11用户管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #3a7bc8;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-logout {
+            background: #95a5a6;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: #7f8c8d;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            color: #666;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .user-table th, .user-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .user-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .user-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .user-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .welcome-card {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            font-size: 60px;
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .time-display {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .time-display h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .login-time {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .logout-time {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .role-selector {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .role-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            background: #f8f9fa;
+            transition: background 0.3s;
+        }
+
+        .role-option.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        .redirect-info {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .redirect-info p {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .redirect-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .redirect-btn {
+            background: #2ecc71;
+            margin-top: 10px;
+        }
+
+        .redirect-btn:hover {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="card" id="login-card">
+            <h1>YOLOV11目标检测登录界面</h1>
+            <p class="subtitle">请选择角色并登录</p>
+
+            <div class="role-selector">
+                <div class="role-option active" data-role="user">用户</div>
+                <div class="role-option" data-role="admin">管理员</div>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名">
+                    <div class="error" id="username-error">用户名格式不正确（4-16位字母数字）</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码">
+                    <div class="error" id="password-error">密码格式不正确（6-18位字母数字）</div>
+                </div>
+
+                <button type="submit" class="btn" id="login-btn">登录</button>
+            </form>
+        </div>
+
+        <!-- 用户界面 -->
+        <div class="card hidden" id="user-card">
+            <div class="header">
+                <h1>用户控制台</h1>
+                <button class="btn btn-logout" id="user-logout">退出登录</button>
+            </div>
+
+            <div class="welcome-card">
+                <div class="welcome-icon">👤</div>
+                <h2>欢迎回来，<span id="user-name"></span>！</h2>
+                <p class="welcome-text">您已成功登录用户系统</p>
+
+                <div class="time-display">
+                    <h3>您的登录记录</h3>
+                    <p>最近登录时间: <span id="user-login-time" class="login-time"></span></p>
+                    <p>最近登出时间: <span id="user-logout-time" class="logout-time"></span></p>
+                </div>
+
+                <div class="redirect-info">
+                    <p>登录成功！即将跳转到主页面</p>
+                    <p>倒计时: <span class="redirect-timer" id="redirect-timer">5</span> 秒</p>
+                    <button class="btn redirect-btn" id="redirect-now">立即跳转</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员界面 -->
+        <div class="card hidden" id="admin-card">
+            <div class="header">
+                <h1>管理员控制台</h1>
+                <button class="btn btn-logout" id="admin-logout">退出登录</button>
+            </div>
+
+            <p class="subtitle">用户管理 - 查看和删除用户信息</p>
+
+            <div class="user-info">
+                当前管理员: <span id="admin-name"></span>
+            </div>
+
+            <div class="redirect-info">
+                <p>登录成功！即将跳转到管理后台</p>
+                <p>倒计时: <span class="redirect-timer" id="admin-redirect-timer">5</span> 秒</p>
+                <button class="btn redirect-btn" id="admin-redirect-now">立即跳转</button>
+            </div>
+
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>最近登录时间</th>
+                        <th>最近登出时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <!-- 用户数据将通过JavaScript动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 通知消息 -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 模拟JSON数据存储
+        let userData = {
+            users: [
+                { username: "user1", password: "pass123", loginTime: "2023-10-15 09:30:25", logoutTime: "2023-10-15 17:45:10" },
+                { username: "user2", password: "pass456", loginTime: "2023-10-16 08:15:30", logoutTime: "2023-10-16 18:20:45" },
+                { username: "user3", password: "pass789", loginTime: "2023-10-17 10:05:15", logoutTime: "2023-10-17 19:30:20" }
+            ],
+            admins: [
+                { username: "admin", password: "admin123" }
+            ]
+        };
+
+        // 初始化 - 从localStorage加载数据或使用默认数据
+        function initializeData() {
+            const storedData = localStorage.getItem('userManagementData');
+            if (storedData) {
+                userData = JSON.parse(storedData);
+            } else {
+                localStorage.setItem('userManagementData', JSON.stringify(userData));
+            }
+        }
+
+        // 保存数据到localStorage
+        function saveData() {
+            localStorage.setItem('userManagementData', JSON.stringify(userData));
+        }
+
+        // DOM元素
+        const loginCard = document.getElementById('login-card');
+        const userCard = document.getElementById('user-card');
+        const adminCard = document.getElementById('admin-card');
+        const loginForm = document.getElementById('login-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const usernameError = document.getElementById('username-error');
+        const passwordError = document.getElementById('password-error');
+        const roleOptions = document.querySelectorAll('.role-option');
+        const userLogoutBtn = document.getElementById('user-logout');
+        const adminLogoutBtn = document.getElementById('admin-logout');
+        const userNameSpan = document.getElementById('user-name');
+        const userLoginTimeSpan = document.getElementById('user-login-time');
+        const userLogoutTimeSpan = document.getElementById('user-logout-time');
+        const adminNameSpan = document.getElementById('admin-name');
+        const userTableBody = document.getElementById('user-table-body');
+        const notification = document.getElementById('notification');
+        const redirectTimer = document.getElementById('redirect-timer');
+        const adminRedirectTimer = document.getElementById('admin-redirect-timer');
+        const redirectNowBtn = document.getElementById('redirect-now');
+        const adminRedirectNowBtn = document.getElementById('admin-redirect-now');
+
+        let currentRole = 'user';
+        let redirectCountdown;
+
+        // 角色选择
+        roleOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                roleOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                currentRole = option.getAttribute('data-role');
+            });
+        });
+
+        // 显示通知
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = 'notification';
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 验证用户名格式
+        function validateUsername(username) {
+            const usernameRegex = /^[a-zA-Z0-9]{4,16}$/;
+            return usernameRegex.test(username);
+        }
+
+        // 验证密码格式
+        function validatePassword(password) {
+            const passwordRegex = /^[a-zA-Z0-9]{6,18}$/;
+            return passwordRegex.test(password);
+        }
+
+        // 跳转到指定URL
+        function redirectToTarget() {
+            window.location.href = "http://127.0.0.1:5000/detect.html";
+        }
+
+        // 开始跳转倒计时
+        function startRedirectCountdown(timerElement, seconds = 5) {
+            let countdown = seconds;
+            timerElement.textContent = countdown;
+
+            redirectCountdown = setInterval(() => {
+                countdown--;
+                timerElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(redirectCountdown);
+                    redirectToTarget();
+                }
+            }, 1000);
+        }
+
+        // 登录处理
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // 重置错误信息
+            usernameError.style.display = 'none';
+            passwordError.style.display = 'none';
+
+            // 验证输入
+            let isValid = true;
+
+            if (!validateUsername(username)) {
+                usernameError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (!validatePassword(password)) {
+                passwordError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // 验证登录信息
+            let loginSuccessful = false;
+            let user = null;
+
+            if (currentRole === 'user') {
+                user = userData.users.find(u => u.username === username && u.password === password);
+                if (user) {
+                    loginSuccessful = true;
+
+                    // 更新登录时间
+                    user.loginTime = new Date().toLocaleString('zh-CN');
+                    saveData();
+
+                    // 显示用户界面
+                    showUserInterface(user);
+
+                    // 开始跳转倒计时
+                    startRedirectCountdown(redirectTimer, 5);
+                }
+            } else if (currentRole === 'admin') {
+                const admin = userData.admins.find(a => a.username === username && a.password === password);
+                if (admin) {
+                    loginSuccessful = true;
+
+                    // 显示管理员界面
+                    showAdminInterface(admin);
+
+                    // 开始跳转倒计时
+                    startRedirectCountdown(adminRedirectTimer, 5);
+                }
+            }
+
+            if (loginSuccessful) {
+                showNotification('登录成功！即将跳转...');
+            } else {
+                showNotification('用户名或密码错误！', true);
+            }
+        });
+
+        // 显示用户界面
+        function showUserInterface(user) {
+            loginCard.classList.add('hidden');
+            userCard.classList.remove('hidden');
+
+            userNameSpan.textContent = user.username;
+            userLoginTimeSpan.textContent = user.loginTime || '暂无记录';
+            userLogoutTimeSpan.textContent = user.logoutTime || '暂无记录';
+        }
+
+        // 显示管理员界面
+        function showAdminInterface(admin) {
+            loginCard.classList.add('hidden');
+            adminCard.classList.remove('hidden');
+
+            adminNameSpan.textContent = admin.username;
+
+            // 填充用户表格
+            populateUserTable();
+        }
+
+        // 填充用户表格
+        function populateUserTable() {
+            userTableBody.innerHTML = '';
+
+            userData.users.forEach((user, index) => {
+                const row = document.createElement('tr');
+
+                const usernameCell = document.createElement('td');
+                usernameCell.textContent = user.username;
+
+                const loginTimeCell = document.createElement('td');
+                loginTimeCell.textContent = user.loginTime || '暂无记录';
+
+                const logoutTimeCell = document.createElement('td');
+                logoutTimeCell.textContent = user.logoutTime || '暂无记录';
+
+                const actionsCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '删除';
+                deleteButton.className = 'action-btn btn-danger';
+                deleteButton.addEventListener('click', () => deleteUser(index));
+
+                actionsCell.appendChild(deleteButton);
+
+                row.appendChild(usernameCell);
+                row.appendChild(loginTimeCell);
+                row.appendChild(logoutTimeCell);
+                row.appendChild(actionsCell);
+
+                userTableBody.appendChild(row);
+            });
+        }
+
+        // 删除用户
+        function deleteUser(index) {
+            if (confirm('确定要删除此用户吗？此操作不可撤销。')) {
+                userData.users.splice(index, 1);
+                saveData();
+                populateUserTable();
+                showNotification('用户删除成功！');
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            // 清除跳转倒计时
+            if (redirectCountdown) {
+                clearInterval(redirectCountdown);
+            }
+
+            // 如果是用户退出，更新登出时间
+            if (userCard.classList.contains('hidden') === false) {
+                const username = userNameSpan.textContent;
+                const user = userData.users.find(u => u.username === username);
+                if (user) {
+                    user.logoutTime = new Date().toLocaleString('zh-CN');
+                    saveData();
+                }
+            }
+
+            // 重置界面
+            loginCard.classList.remove('hidden');
+            userCard.classList.add('hidden');
+            adminCard.classList.add('hidden');
+
+            // 清空表单
+            loginForm.reset();
+
+            showNotification('已成功退出登录');
+        }
+
+        // 绑定事件
+        userLogoutBtn.addEventListener('click', logout);
+        adminLogoutBtn.addEventListener('click', logout);
+
+        // 立即跳转按钮
+        redirectNowBtn.addEventListener('click', () => {
+            if (redirectCountdown) {
+                clearInterval(redirectCountdown);
+            }
+            redirectToTarget();
+        });
+
+        adminRedirectNowBtn.addEventListener('click', () => {
+            if (redirectCountdown) {
+                clearInterval(redirectCountdown);
+            }
+            redirectToTarget();
+        });
+
+        // 初始化
+        initializeData();
+    </script>
+</body>
+</html>
