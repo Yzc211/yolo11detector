@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>登录 - YOLO Demo</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; }
+    .box { width: 360px; padding: 16px; border: 1px solid #ddd; }
+    label { display:block; margin-top:8px; }
+    input { width:100%; padding:6px; margin-top:4px; box-sizing: border-box; }
+    .btn { margin-top:12px; padding:8px 12px; }
+    .error { color: red; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h2>登录</h2>
+  <div class="box">
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/login">
+      <input type="hidden" name="next" value="{{ next or '/' }}" />
+      <label>用户名：
+        <input type="text" name="username" required />
+      </label>
+      <label>密码：
+        <input type="password" name="password" required />
+      </label>
+      <button class="btn" type="submit">登录</button>
+    </form>
+  </div>
+  <div style="margin-top:12px; font-size:13px; color:#666">
+    示例用户：
+    <ul>
+      <li>普通用户：user / user123</li>
+      <li>管理员：admin / admin123</li>
+    </ul>
+    （请在生产中替换为更安全的用户存储和密码策略）
+  </div>
+</body>
+</html>

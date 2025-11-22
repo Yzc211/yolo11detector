@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>YOLO Demo - 上传检测</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; }
+    .section { margin-bottom: 20px; }
+    #results img { max-width: 320px; margin: 8px; border: 1px solid #ddd; }
+    .thumb { display:inline-block; text-align:center; margin:10px; }
+    .btn { padding:6px 12px; margin-top:8px; }
+    #status { color: #333; margin-top: 8px; }
+    .topbar { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span>当前用户: {{ session.get('username') }} ({{ session.get('role') }})</span>
+    &nbsp;|&nbsp;<a href="/logout">登出</a>
+    {% if session.get('role') == 'admin' %}
+    &nbsp;|&nbsp;<a href="/admin">管理员页面</a>
+    {% endif %}
+  </div>
+
+  <h2>YOLO 图像检测 Demo</h2>
+
+  <div class="section">
+    <h3>上传单张或多张图片进行检测</h3>
+    <input type="file" id="filesInput" multiple accept="image/*" />
+    <button id="uploadBtn" class="btn">上传并检测</button>
+  </div>
+
+  <div class="section">
+    <h3>上传本地文件夹（浏览器支持 webkitdirectory）</h3>
+    <input type="file" id="folderInput" webkitdirectory directory multiple />
+    <button id="uploadFolderBtn" class="btn">上传文件夹并检测</button>
+    <div style="font-size:12px;color:#666">提示：并非所有浏览器都支持文件夹选择。若不支持，请手动多选文件。</div>
+  </div>
+
+  <div class="section">
+    <h3>或使用服务器上已有路径（仅当服务器上存在图片时）</h3>
+    <input type="text" id="serverPath" placeholder="/path/to/image.jpg" style="width:60%" />
+    <button id="runPathBtn" class="btn">在服务器上运行检测</button>
+  </div>
+
+  <div id="status"></div>
+
+  <hr/>
+  <h3>检测结果</h3>
+  <div id="results"></div>
+
+<script>
+async function uploadFiles(files) {
+  if (!files || files.length === 0) {
+    alert("请选择文件后再上传");
+    return;
+  }
+  const fd = new FormData();
+  for (const f of files) {
+    fd.append("files", f, f.webkitRelativePath || f.name);
+  }
+  document.getElementById("status").innerText = "上传并推理中，请稍候...";
+  try {
+    const r = await fetch("/upload_images", { method: "POST", body: fd });
+    const j = await r.json();
+    if (!r.ok) {
+      document.getElementById("status").innerText = "出错: " + (j.error || JSON.stringify(j));
+      return;
+    }
+    document.getElementById("status").innerText = "推理完成，结果如下：";
+    showResults(j.results || []);
+  } catch (e) {
+    document.getElementById("status").innerText = "请求失败: " + e;
+  }
+}
+
+function showResults(urls) {
+  const box = document.getElementById("results");
+  box.innerHTML = "";
+  if (!urls || urls.length === 0) {
+    box.innerHTML = "<div>没有生成结果图片。</div>";
+    return;
+  }
+  urls.forEach(u => {
+    const div = document.createElement("div");
+    div.className = "thumb";
+    const img = document.createElement("img");
+    img.src = u;
+    const a = document.createElement("a");
+    a.href = u;
+    a.target = "_blank";
+    a.innerText = "打开原图";
+    div.appendChild(img);
+    div.appendChild(document.createElement("br"));
+    div.appendChild(a);
+    box.appendChild(div);
+  });
+}
+
+document.getElementById("uploadBtn").addEventListener("click", () => {
+  const input = document.getElementById("filesInput");
+  uploadFiles(input.files);
+});
+
+document.getElementById("uploadFolderBtn").addEventListener("click", () => {
+  const input = document.getElementById("folderInput");
+  uploadFiles(input.files);
+});
+
+document.getElementById("runPathBtn").addEventListener("click", async () => {
+  const path = document.getElementById("serverPath").value.trim();
+  if (!path) { alert("请输入服务器上的图片路径"); return; }
+  document.getElementById("status").innerText = "开始在服务器上运行模型...";
+  try {
+    const r = await fetch("/run_yolo_path", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_path: path })
+    });
+    const j = await r.json();
+    if (!r.ok) {
+      document.getElementById("status").innerText = "出错: " + (j.error || JSON.stringify(j));
+      return;
+    }
+    document.getElementById("status").innerText = "推理完成";
+    showResults(j.results || j.result_image ? [j.result_image] : []);
+  } catch (e) {
+    document.getElementById("status").innerText = "请求失败: " + e;
+  }
+});
+</script>
+</body>
+</html>

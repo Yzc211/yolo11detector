@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>管理员 - 模型管理</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; }
+    .btn { padding:6px 12px; margin-top:8px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    .topbar { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span>当前用户: {{ session.get('username') }} ({{ session.get('role') }})</span>
+    &nbsp;|&nbsp;<a href="/logout">登出</a>
+    &nbsp;|&nbsp;<a href="/">返回检测页面</a>
+  </div>
+
+  <h2>模型管理（管理员）</h2>
+  <div>
+    <form id="uploadForm">
+      <label>上传新模型 (.pt)：</label>
+      <input type="file" id="modelFile" accept=".pt" />
+      <button type="button" id="uploadModelBtn" class="btn">上传并加载</button>
+    </form>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h3>当前可用模型</h3>
+    <div id="modelsArea">正在加载模型列表...</div>
+  </div>
+
+<script>
+async function refreshModels() {
+  const area = document.getElementById("modelsArea");
+  area.innerText = "加载中...";
+  try {
+    const r = await fetch("/models");
+    const j = await r.json();
+    if (!r.ok) {
+      area.innerText = "加载失败: " + (j.error || JSON.stringify(j));
+      return;
+    }
+    const models = j.models || [];
+    const active = j.active || "";
+    if (models.length === 0) {
+      area.innerHTML = "<div>models 文件夹为空。</div>";
+      return;
+    }
+    let html = "<table><tr><th>模型文件</th><th>状态</th><th>操作</th></tr>";
+    models.forEach(m => {
+      html += "<tr><td>" + m + "</td><td>" + (m === active ? "<strong>当前使用</strong>" : "") + "</td>";
+      html += "<td><button onclick=\"setModel('" + m + "')\">设置为当前</button></td></tr>";
+    });
+    html += "</table>";
+    area.innerHTML = html;
+  } catch (e) {
+    area.innerText = "请求失败: " + e;
+  }
+}
+
+async function setModel(name) {
+  if (!confirm("确定将模型切换为: " + name + " ?")) return;
+  try {
+    const r = await fetch("/models/set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: name })
+    });
+    const j = await r.json();
+    if (!r.ok) {
+      alert("切换失败: " + (j.error || JSON.stringify(j)));
+      return;
+    }
+    alert("已切换模型: " + j.active);
+    refreshModels();
+  } catch (e) {
+    alert("请求失败: " + e);
+  }
+}
+
+document.getElementById("uploadModelBtn").addEventListener("click", async () => {
+  const f = document.getElementById("modelFile").files[0];
+  if (!f) { alert("请选择 .pt 文件"); return; }
+  const fd = new FormData();
+  fd.append("model", f);
+  try {
+    const r = await fetch("/models/upload", { method: "POST", body: fd });
+    const j = await r.json();
+    if (!r.ok) {
+      alert("上传失败: " + (j.error || JSON.stringify(j)));
+      return;
+    }
+    alert("上传并加载成功，当前模型: " + j.active);
+    refreshModels();
+  } catch (e) {
+    alert("请求失败: " + e);
+  }
+});
+
+refreshModels();
+</script>
+</body>
+</html>
