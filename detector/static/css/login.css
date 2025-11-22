@@ -1,0 +1,68 @@
+/* login.css — 登录页美化（已更新：去掉 logo，缩小 placeholder，强化表单边框/背景） */
+body {
+  background: linear-gradient(180deg, #f6f8fb 0%, #ffffff 100%);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* 卡片风格：增强边框对比（使表单从背景中凸显） */
+.form-card {
+  border: 1px solid #e2e8f0; /* 明显一点的边框色 */
+  border-radius: 12px;
+  background: #ffffff;       /* 白色卡片背景，和页面背景区分开 */
+}
+
+/* 标题样式（无 logo） */
+.brand-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0b5ed7;
+  margin-bottom: 2px;
+}
+
+/* 输入样式：边框更清晰 */
+.form-control {
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid #cfd8e3; /* 比之前深一些，和背景区分 */
+}
+
+.form-control:focus {
+  border-color: rgba(13,110,253,0.8);
+  box-shadow: 0 8px 22px rgba(13,110,253,0.06);
+  outline: none;
+}
+
+/* placeholder 字体大小调整：与 label 大小接近 */
+.form-control::placeholder {
+  font-size: 0.95rem; /* 与 label 大小接近 */
+  color: #6c757d;
+}
+
+/* label 调整为与 placeholder 相近的大小 */
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* 按钮 */
+.btn-primary {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+/* 提示文字与 footer 链接样式 */
+.card-footer a {
+  text-decoration: none;
+  color: #0b5ed7;
+}
+.card-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 移动端适配 */
+@media (max-width: 576px) {
+  .card { margin: 0 12px; }
+  .form-control::placeholder { font-size: 0.92rem; }
+}

@@ -3,131 +3,102 @@
 <head>
   <meta charset="utf-8">
   <title>YOLO Demo - 上传检测</title>
-  <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; }
-    .section { margin-bottom: 20px; }
-    #results img { max-width: 320px; margin: 8px; border: 1px solid #ddd; }
-    .thumb { display:inline-block; text-align:center; margin:10px; }
-    .btn { padding:6px 12px; margin-top:8px; }
-    #status { color: #333; margin-top: 8px; }
-    .topbar { margin-bottom: 12px; }
-  </style>
+
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- 自定义样式 -->
+  <link rel="stylesheet" href="static/css/detect.css">
 </head>
-<body>
-  <div class="topbar">
-    <span>当前用户: {{ session.get('username') }} ({{ session.get('role') }})</span>
-    &nbsp;|&nbsp;<a href="/logout">登出</a>
-    {% if session.get('role') == 'admin' %}
-    &nbsp;|&nbsp;<a href="/admin">管理员页面</a>
-    {% endif %}
+<body class="bg-light">
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <strong>当前用户:</strong> {{ session.get('username') }} ({{ session.get('role') }})
+        &nbsp;|&nbsp;<a href="/logout">登出</a>
+        {% if session.get('role') == 'admin' %}
+        &nbsp;|&nbsp;<a href="/admin">管理员页面</a>
+        {% endif %}
+      </div>
+      <h4 class="m-0">YOLO-在线图像检测系统</h4>
+    </div>
+
+    <div class="row g-3">
+      <!-- 左侧：上传 + 操作（去掉独立上传按钮，保留两个选择按钮） -->
+      <div class="col-lg-5">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="card-title mb-3">上传图片</h5>
+
+            <div id="drop-area" class="border rounded p-3 mb-3 text-center">
+              <!-- 两个独立的 input（一个用于选择图片，另一个用于选择文件夹） -->
+              <input type="file" id="imagesInput" multiple accept="image/*" hidden>
+              <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+              <div class="d-flex justify-content-center gap-2">
+                <button id="chooseImagesBtn" class="btn btn-outline-primary btn-sm">选择图片</button>
+                <button id="chooseFolderBtn" class="btn btn-outline-secondary btn-sm">选择文件夹</button>
+              </div>
+              <div class="mt-2 text-muted small">或将图片拖拽到此处（支持多选与文件夹上传）</div>
+              <div class="mt-2 text-muted small">选择后会自动上传并显示在右侧“已上传图片”中</div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button id="detectAllBtn" class="btn btn-success">全部检测</button>
+              <button id="singleDetectBtn" class="btn btn-outline-success" disabled>单张检测</button>
+            </div>
+
+            <div id="status" class="mt-3 small text-muted"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：已上传图片（缩略图 gallery） -->
+      <div class="col-lg-7">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="card-title">已上传图片</h5>
+            <p class="text-muted small mb-2">点击缩略图选中一张，选中后可执行“单张检测”。</p>
+            <div id="gallery" class="row row-cols-4 g-2" style="max-height:320px;overflow:auto;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全宽：全部检测结果（移到行外并占满整行宽度，左右与上方上传/已上传区域对齐） -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">全部检测结果</h5>
+            <p class="text-muted small mb-2">下面将显示全部检测出的带框图片（点击任意缩略图可放大）。</p>
+
+            <!-- 新增：显示后端返回的保存目录信息 -->
+            <div id="savedPathInfo" class="mb-2 small text-muted"></div>
+
+            <div id="resultsGrid" class="row g-2" style="max-height:640px;overflow:auto;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-4 text-center text-muted small">
+  本项目已开源：<a href="https://github.com/Yzc211/yolo11detector" target="_blank" rel="noopener noreferrer">https://github.com/Yzc211/yolo11detector</a>
+</footer>
   </div>
 
-  <h2>YOLO 图像检测 Demo</h2>
-
-  <div class="section">
-    <h3>上传单张或多张图片进行检测</h3>
-    <input type="file" id="filesInput" multiple accept="image/*" />
-    <button id="uploadBtn" class="btn">上传并检测</button>
+  <!-- Modal: 点击图片放大 -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center">
+          <img id="modalImage" src="" class="img-fluid rounded" alt="preview">
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="section">
-    <h3>上传本地文件夹（浏览器支持 webkitdirectory）</h3>
-    <input type="file" id="folderInput" webkitdirectory directory multiple />
-    <button id="uploadFolderBtn" class="btn">上传文件夹并检测</button>
-    <div style="font-size:12px;color:#666">提示：并非所有浏览器都支持文件夹选择。若不支持，请手动多选文件。</div>
-  </div>
-
-  <div class="section">
-    <h3>或使用服务器上已有路径（仅当服务器上存在图片时）</h3>
-    <input type="text" id="serverPath" placeholder="/path/to/image.jpg" style="width:60%" />
-    <button id="runPathBtn" class="btn">在服务器上运行检测</button>
-  </div>
-
-  <div id="status"></div>
-
-  <hr/>
-  <h3>检测结果</h3>
-  <div id="results"></div>
-
-<script>
-async function uploadFiles(files) {
-  if (!files || files.length === 0) {
-    alert("请选择文件后再上传");
-    return;
-  }
-  const fd = new FormData();
-  for (const f of files) {
-    fd.append("files", f, f.webkitRelativePath || f.name);
-  }
-  document.getElementById("status").innerText = "上传并推理中，请稍候...";
-  try {
-    const r = await fetch("/upload_images", { method: "POST", body: fd });
-    const j = await r.json();
-    if (!r.ok) {
-      document.getElementById("status").innerText = "出错: " + (j.error || JSON.stringify(j));
-      return;
-    }
-    document.getElementById("status").innerText = "推理完成，结果如下：";
-    showResults(j.results || []);
-  } catch (e) {
-    document.getElementById("status").innerText = "请求失败: " + e;
-  }
-}
-
-function showResults(urls) {
-  const box = document.getElementById("results");
-  box.innerHTML = "";
-  if (!urls || urls.length === 0) {
-    box.innerHTML = "<div>没有生成结果图片。</div>";
-    return;
-  }
-  urls.forEach(u => {
-    const div = document.createElement("div");
-    div.className = "thumb";
-    const img = document.createElement("img");
-    img.src = u;
-    const a = document.createElement("a");
-    a.href = u;
-    a.target = "_blank";
-    a.innerText = "打开原图";
-    div.appendChild(img);
-    div.appendChild(document.createElement("br"));
-    div.appendChild(a);
-    box.appendChild(div);
-  });
-}
-
-document.getElementById("uploadBtn").addEventListener("click", () => {
-  const input = document.getElementById("filesInput");
-  uploadFiles(input.files);
-});
-
-document.getElementById("uploadFolderBtn").addEventListener("click", () => {
-  const input = document.getElementById("folderInput");
-  uploadFiles(input.files);
-});
-
-document.getElementById("runPathBtn").addEventListener("click", async () => {
-  const path = document.getElementById("serverPath").value.trim();
-  if (!path) { alert("请输入服务器上的图片路径"); return; }
-  document.getElementById("status").innerText = "开始在服务器上运行模型...";
-  try {
-    const r = await fetch("/run_yolo_path", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_path: path })
-    });
-    const j = await r.json();
-    if (!r.ok) {
-      document.getElementById("status").innerText = "出错: " + (j.error || JSON.stringify(j));
-      return;
-    }
-    document.getElementById("status").innerText = "推理完成";
-    showResults(j.results || j.result_image ? [j.result_image] : []);
-  } catch (e) {
-    document.getElementById("status").innerText = "请求失败: " + e;
-  }
-});
-</script>
+  <!-- 脚本 -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="static/js/detect_gallery.js"></script>
 </body>
 </html>

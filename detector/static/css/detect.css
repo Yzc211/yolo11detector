@@ -1,0 +1,36 @@
+/* detect.css — 轻量样式增强 */
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+#drop-area {
+  min-height: 110px;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border: 1px dashed #e6e9ee;
+  transition: background .12s, border-color .12s;
+}
+#drop-area.dragover { background: #f0f8ff; border-color: #4b9bff; }
+
+#gallery .thumb {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: transform .08s, border-color .12s, box-shadow .12s;
+  background: #fff;
+}
+#gallery .thumb:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(20,30,70,0.06); }
+#gallery .thumb.selected {
+  border-color: #0d6efd;
+  box-shadow: 0 10px 28px rgba(13,110,253,0.12);
+}
+#gallery img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* 结果网格 */
+#resultsGrid .thumb { padding:6px; background:#fff; border-radius:6px; }
+#resultsGrid img { width:100%; height:200px; object-fit:cover; border-radius:6px; }
+
+/* 更宽的结果显示（适配全宽） */
+@media (max-width: 1200px) {
+  #resultsGrid img { height:160px; }
+}
+@media (max-width: 767px) {
+  #resultsGrid img { height:100px; }
+}
