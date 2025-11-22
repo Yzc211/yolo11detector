@@ -2,11 +2,11 @@
 
 简体中文 README — 针对仓库 Yzc211/yolo11detector
 
-> 一个基于 YOLO 思路的目标检测项目（仓库名：yolo11detector）。此 README 提供项目简介、在本地创建虚拟环境并安装依赖的详细步骤、运行/部署和使用流程示例，以及常见问题与贡献说明。请根据仓库中具体实现（如 Flask/FastAPI、模型文件名、配置项）做必要的替换和补充。
+> 一个基于 YOLO 思路的目标检测项目（仓库名：yolo11detector）。此 README 提供项目简介、在本地创建虚拟环境并安装依赖的详细步骤、运行/部署和使用流程示例，以及常见问题与贡献说明。
 
 ---
 
-## 目录（示例）
+## 项目目录
 - README.md（本文件）
 - app.py / main.py — 后端入口（示例）
 - requirements.txt — Python 依赖（若存在）
@@ -18,7 +18,7 @@
 
 ---
 
-## 项目简介（已有的项目简介）
+## 项目简介
 yolo11detector 是一个用于目标检测的工程化项目模板，包含前端（HTML）用于上传图片/显示结果，和后端（Python）用于加载 YOLO 系列模型权重并进行推理。项目能够执行：
 - 单张图片检测
 - 批量图片检测
@@ -221,34 +221,11 @@ python train.py --data data/dataset.yaml --cfg configs/yolo11.yaml --weights '' 
 
 ---
 
-## 贡献
-欢迎贡献！典型流程：
-1. Fork 本仓库
-2. 新建 feature 分支：`git checkout -b feat/your-feature`
-3. 提交并推送：`git commit -am "描述"`，`git push origin feat/your-feature`
-4. 提交 PR，描述改动内容与测试步骤
-
-请在 PR 中尽量包含：
-- 改动说明
-- 测试步骤
-- 如果涉及模型/数据，请提供小样例或说明如何获取
-
----
-
 ## 许可（License）
-在此处说明项目使用的开源协议，例如 MIT、Apache-2.0 等。若尚未决定，请在仓库根目录添加 LICENSE 文件并在此替换为具体许可名称。
-
+暂无。
 ---
 
 ## 联系方式
 - 作者 / 维护者：Yzc211
-- 邮箱：<请在此填写联系邮箱>（可选）
+- 邮箱：<yzc1201@zjnu.edu.cn>（可选）
 - Issues: 请通过 GitHub issues 提交 bug 报告或功能请求
-
----
-
-如果你愿意，我可以：
-- 基于仓库内实际文件（如 app.py、requirements.txt、templates/）为你自动生成一个与代码一致的 README —— 若要我这样做，请允许我读取仓库文件或把关键文件内容粘贴到对话中。
-- 帮你生成 Dockerfile、requirements.txt 模板或一个 sample config 文件。
-
-要我继续哪一步？请告诉我是否需要我根据仓库文件生成更精确的 README（我将读取仓库文件以补全内容）。````
