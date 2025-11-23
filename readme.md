@@ -7,14 +7,11 @@
 ---
 
 ## 项目目录
-- README.md（本文件）
-- app.py / main.py — 后端入口（示例）
-- requirements.txt — Python 依赖（若存在）
-- models/ — 存放模型权重
-- static/ / templates/ — 前端 HTML / JS / CSS 文件
-- configs/ — 可选：配置文件
-- utils/ — 工具函数（图像预处理、后处理等）
-- scripts/ — 启动/部署脚本
+-server.py：后端主逻辑（Flask 应用、路由、推理、模型管理）
+-login.html、detect.html、admin.html：前端页面模板
+-model_config.json：记录当前激活模型名
+-models/：放置 .pt 模型文件
+-static/、static/uploads/、static/results/：上传文件与推理结果存放位置
 
 ---
 
