@@ -7,11 +7,11 @@
 ---
 
 ## 项目目录
--server.py：后端主逻辑（Flask 应用、路由、推理、模型管理）
--login.html、detect.html、admin.html：前端页面模板
--model_config.json：记录当前激活模型名
--models/：放置 .pt 模型文件
--static/、static/uploads/、static/results/：上传文件与推理结果存放位置
+- server.py：后端主逻辑（Flask 应用、路由、推理、模型管理）
+- login.html、detect.html、admin.html：前端页面模板
+- model_config.json：记录当前激活模型名
+- models/：放置 .pt 模型文件
+- static/、static/uploads/、static/results/：上传文件与推理结果存放位置
 
 ---
 
