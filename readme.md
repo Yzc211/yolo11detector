@@ -9,9 +9,12 @@
 ## 项目目录
 - server.py：后端主逻辑（Flask 应用、路由、推理、模型管理）
 - login.html、detect.html、admin.html：前端页面模板
-- model_config.json：记录当前激活模型名
+- model_config.json：记录当前激活检测模型名称
 - models/：放置 .pt 模型文件
-- static/、static/uploads/、static/results/：上传文件与推理结果存放位置
+- static/uploads/、static/results/：上传文件与推理结果存放位置
+- static/css、static/js：Web各页面样式渲染文件
+- requirements.txt：项目部署所需库函数
+
 
 ---
 
@@ -110,7 +113,7 @@ export FLASK_APP=app.py
 export FLASK_ENV=development
 flask run --host=0.0.0.0 --port=5000
 # 或
-python app.py
+python server.py
 ```
 
 FastAPI（假设入口为 main.py 并存在 app 实例）：
@@ -119,43 +122,10 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 运行后，打开浏览器访问:
-- http://localhost:5000/ 或 http://localhost:8000/
+- http://localhost:5000/ 或 http://127.0.0.1:5000/
 
 ---
 
-## 使用流程（部署后 / 运行后）
-
-以下是典型的使用流程示例（根据项目实际路由调整）：
-
-1) 打开页面，进入首页（例如 `/`），会看到上传控件或摄像头流界面。
-2) 上传图片并点击“检测”按钮，后端会返回带检测框的图片或 JSON 结果。
-3) 若使用 API，可通过 curl 或其他工具调用接口：
-   - 单张图片推理（示例）
-   ```bash
-   curl -X POST "http://localhost:8000/predict" -F "image=@./test.jpg"
-   ```
-   返回（示例）：
-   ```json
-   {
-     "predictions": [
-       {"label": "person", "confidence": 0.98, "bbox": [x1, y1, x2, y2]},
-       ...
-     ],
-     "image_url": "/static/results/test_out.jpg"
-   }
-   ```
-
-4) 批量推理或目录处理：
-```bash
-python scripts/batch_infer.py --input data/images --output results --weights models/yolo11.pt
-```
-
-5) 实时摄像头流（若支持）：
-```bash
-python scripts/stream_infer.py --source 0 --weights models/yolo11.pt
-```
-
----
 
 ## 部署建议（生产环境）
 1. 使用 WSGI/ASGI 服务器（Flask -> gunicorn，FastAPI -> uvicorn/gunicorn）：
@@ -177,22 +147,6 @@ docker run -d --gpus all -p 8000:8000 --name yolo11detector yolo11detector:lates
 （若无 GPU，可去掉 `--gpus all`）
 
 4. 资源与监控：在生产环境限制模型占用显存，设置合理的并发和超时策略。可通过 Prometheus 等监控工具监测服务状态。
-
----
-
-## 配置示例（.env / config）
-在仓库中放一个 `configs/config.example.yaml` 或 `.env.example`，示例：
-```yaml
-SERVER:
-  host: 0.0.0.0
-  port: 8000
-MODEL:
-  weights: models/yolo11.pt
-  conf_threshold: 0.25
-  iou_threshold: 0.45
-LOGGING:
-  level: INFO
-```
 
 ---
 
